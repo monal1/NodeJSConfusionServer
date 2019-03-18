@@ -10,6 +10,25 @@ var dishRouter = require("./routes/dishRouter");
 var promoRouter = require("./routes/promoRouter");
 var leaderRouter = require("./routes/leaderRouter");
 
+//Going to be making use of the Mongoose module, in order to establish the connection with the server
+const mongoose = require("mongoose");
+
+// Importing dishes, which contains the dishes file, which declares the dishes schema and the model.
+const Dishes = require("./models/dishes");
+
+// Establish connection with Server
+const url = "mongodb://localhost:27017/conFusion";
+const connect = mongoose.connect(url);
+
+connect.then(
+  db => {
+    console.log("Connected correctly to server");
+  },
+  err => {
+    console.log(err);
+  }
+);
+
 var app = express();
 
 // view engine setup
