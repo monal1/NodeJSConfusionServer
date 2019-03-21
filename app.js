@@ -16,7 +16,7 @@ const mongoose = require("mongoose");
 // Importing dishes, which contains the dishes file, which declares the dishes schema and the model.
 const Dishes = require("./models/dishes");
 const Promotions = require("./models/promotions");
-const leaders = require("../models/leaders");
+const leaders = require("./models/leaders");
 
 // Establish connection with Server
 const url = "mongodb://localhost:27017/conFusion";
@@ -41,6 +41,39 @@ app.use(logger("dev"));
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
 app.use(cookieParser());
+
+// Authorization Phase goes here and before using any of the below authorization should happen
+function auth(req, res, next) {
+  console.log(req.headers);
+  var authHeader = req.headers.authorization;
+  // Challenge client to supply auth userid and passwd
+  if (!authHeader) {
+    var err = new Error("You are not authenticated!");
+    res.setHeader("WWW-Authenticate", "Basic");
+    err.status = 401;
+    next(err);
+    return;
+  }
+  // auth array will have username and psw which is extracted from base64
+  var auth = new Buffer.from(authHeader.split(" ")[1], "base64")
+    .toString()
+    .split(":");
+  var user = auth[0];
+  var pass = auth[1];
+  if (user == "admin" && pass == "password") {
+    next(); // authorized pass through next set of middleware below
+  } else {
+    // Error if No match
+    var err = new Error("You are not authenticated!");
+    res.setHeader("WWW-Authenticate", "Basic");
+    err.status = 401;
+    next(err);
+  }
+}
+// Authentication Middleware
+app.use(auth);
+
+// Middleware
 app.use(express.static(path.join(__dirname, "public")));
 
 app.use("/", indexRouter);
