@@ -15,6 +15,8 @@ const mongoose = require("mongoose");
 
 // Importing dishes, which contains the dishes file, which declares the dishes schema and the model.
 const Dishes = require("./models/dishes");
+const Promotions = require("./models/promotions");
+const leaders = require("../models/leaders");
 
 // Establish connection with Server
 const url = "mongodb://localhost:27017/conFusion";
