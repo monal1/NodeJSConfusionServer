@@ -54,44 +54,26 @@ app.use(
   })
 );
 
+// Moving these 2 before authentication
+app.use("/", indexRouter);
+app.use("/users", usersRouter);
+
 // Authorization Phase goes here and before using any of the below authorization should happen
 function auth(req, res, next) {
   console.log(req.session);
 
   if (!req.session.user) {
-    var authHeader = req.headers.authorization;
-    // Challenge client to supply auth userid and passwd
-    if (!authHeader) {
-      var err = new Error("You are not authenticated!");
-      res.setHeader("WWW-Authenticate", "Basic");
-      err.status = 401;
-      next(err);
-      return;
-    }
-    // auth array will have username and psw which is extracted from base64
-    var auth = new Buffer.from(authHeader.split(" ")[1], "base64")
-      .toString()
-      .split(":");
-    var user = auth[0];
-    var pass = auth[1];
-
-    if (user == "admin" && pass == "password") {
-      // res.cookie("user", "admin", { signed: true }); // Set up Signed cookie
-      req.session.user = "admin";
-      next(); // authorized pass through next set of middleware below
-    } else {
-      // Error if No match
-      var err = new Error("You are not authenticated!");
-      res.setHeader("WWW-Authenticate", "Basic");
-      err.status = 401;
-      next(err);
-    }
+    var err = new Error("You are not authenticated!");
+    res.setHeader("WWW-Authenticate", "Basic");
+    err.status = 401;
+    next(err);
+    return;
   } else {
-    if (req.session.user === "admin") {
+    if (req.session.user === "authenticated") {
       next();
     } else {
       var err = new Error("You are not authenticated!");
-      err.status = 401;
+      err.status = 403;
       return next(err);
     }
   }
@@ -102,8 +84,6 @@ app.use(auth);
 // Middleware
 app.use(express.static(path.join(__dirname, "public")));
 
-app.use("/", indexRouter);
-app.use("/users", usersRouter);
 app.use("/dishes", dishRouter);
 app.use("/promotions", promoRouter);
 app.use("/leaders", leaderRouter);
