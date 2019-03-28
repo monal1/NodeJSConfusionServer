@@ -7,6 +7,7 @@ var session = require("express-session");
 var FileStore = require("session-file-store")(session);
 var passport = require("passport");
 var authenticate = require("./authenticate");
+var config = require("./config");
 
 var indexRouter = require("./routes/index");
 var usersRouter = require("./routes/users");
@@ -23,7 +24,7 @@ const Promotions = require("./models/promotions");
 const leaders = require("./models/leaders");
 
 // Establish connection with Server
-const url = "mongodb://localhost:27017/conFusion";
+const url = config.mongoUrl; // updating from config file
 const connect = mongoose.connect(url);
 
 connect.then(
@@ -45,39 +46,30 @@ app.use(logger("dev"));
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
 // app.use(cookieParser("12345-67890-09876-54321"));
-// Setting Session Middleware
-app.use(
-  session({
-    name: "session-id",
-    secret: "12345-67890-09876-54321",
-    saveUninitialized: false,
-    resave: false,
-    store: new FileStore()
-  })
-);
+// Now removing Setting Session Middleware
 
 // Initialize passport
 app.use(passport.initialize());
-app.use(passport.session());
+// app.use(passport.session());
 
 // Moving these 2 before authentication
 app.use("/", indexRouter);
 app.use("/users", usersRouter);
 
 // Authorization Phase goes here and before using any of the below authorization should happen
-function auth(req, res, next) {
-  console.log(req.user);
+// function auth(req, res, next) {
+//   console.log(req.user);
 
-  if (!req.user) {
-    var err = new Error("You are not authenticated!");
-    err.status = 403;
-    next(err);
-  } else {
-    next();
-  }
-}
-// Authentication Middleware
-app.use(auth);
+//   if (!req.user) {
+//     var err = new Error("You are not authenticated!");
+//     err.status = 403;
+//     next(err);
+//   } else {
+//     next();
+//   }
+// }
+// // Authentication Middleware
+// app.use(auth);
 
 // Middleware
 app.use(express.static(path.join(__dirname, "public")));
